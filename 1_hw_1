@@ -1,0 +1,131 @@
+#include <iostream>
+#include <cmath>
+using std::cout, std::endl;
+
+struct Vector2f 
+{
+    float x, y;
+};
+
+Vector2f operator+(Vector2f left, Vector2f right)
+{
+    return {left.x + right.x, left.y + right.y};
+}
+
+Vector2f operator*(Vector2f left, float right)
+{
+    return {left.x * right, left.y * right};
+}
+
+Vector2f operator*(float left, Vector2f right)
+{
+    return {left * right.x, left * right.y};
+}
+
+Vector2f& operator+=(Vector2f& left, Vector2f right)
+{
+    left.x += right.x;
+    left.y += right.y;
+    return left;
+}
+
+float getDistance(Vector2f a, Vector2f b)
+{
+    return std::sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
+}
+
+std::ostream& operator<<(std::ostream& out, Vector2f right)
+{
+    out << "(" << right.x << ", " << right.y << ")";
+    return out;
+}
+
+class Shape 
+{
+protected:
+    Vector2f mPosition {0.0f, 0.0f};
+
+public:
+    Vector2f getPosition() const 
+    {
+        return mPosition;
+    }
+
+    void setPosition(Vector2f newPosition) 
+    {
+        mPosition = newPosition;
+    }
+
+    void move(Vector2f change) 
+    {
+        mPosition.x += change.x;
+        mPosition.y += change.y;
+    }
+};
+
+// Класс круга
+class Circle : public Shape 
+{
+private:
+    float mRadius;
+
+public:
+    explicit Circle(float radius) : mRadius(radius) {}
+
+    float calculatePerimeter() const 
+    {
+        return 2.0f * 3.14159265f * mRadius;
+    }
+};
+
+class Rectangle : public Shape 
+{
+private:
+    float mWidth;
+    float mHeight;
+
+public:
+    Rectangle(float width, float height) : mWidth(width), mHeight(height) {}
+
+    float calculatePerimeter() const 
+    {
+        return 2.0f * (mWidth + mHeight);
+    }
+};
+
+class Triangle : public Shape 
+{
+private:
+    Vector2f mPointA;
+    Vector2f mPointB;
+    Vector2f mPointC;
+
+public:
+    Triangle(Vector2f a, Vector2f b, Vector2f c) 
+        : mPointA(a), mPointB(b), mPointC(c) {}
+
+    float calculatePerimeter() const 
+    {
+        return getDistance(mPointA, mPointB) 
+             + getDistance(mPointB, mPointC) 
+             + getDistance(mPointC, mPointA);
+    }
+};
+
+int main() 
+{
+
+    Circle circle(10.0f);
+    circle.move({5.0f, 3.0f});
+    cout << "Circle position: " << circle.getPosition() << endl;
+
+    Rectangle rect(100.0f, 200.0f);
+    rect.setPosition({10.0f, 20.0f});
+    cout << "Rectangle position: " << rect.getPosition() << endl;
+
+    Triangle triangle({0.0f, 0.0f}, {5.0f, 0.0f}, {0.0f, 5.0f});
+    triangle.move({-2.0f, 3.0f});
+    cout << "Triangle position: " << triangle.getPosition() << endl;
+
+    return 0;
+}
