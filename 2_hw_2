@@ -1,0 +1,94 @@
+#include <iostream>
+#include <vector>
+#include <memory>
+#include <typeinfo>
+
+class Individual {
+public:
+    virtual void speak() const = 0;
+    virtual int identify() const = 0;
+    virtual ~Individual() = default;
+};
+
+class Alice : public Individual {
+public:
+    void speak() const override { std::cout << "Hi, I am Alice\n"; }
+    int identify() const override { return 0; }
+};
+
+class Bob : public Individual {
+public:
+    void speak() const override { std::cout << "Hi, I am Bob\n"; }
+    int identify() const override { return 1; }
+};
+
+class Casper : public Individual {
+public:
+    void speak() const override { std::cout << "Hi, I am Casper\n"; }
+    int identify() const override { return 2; }
+};
+
+std::vector<Individual*> createIndividuals() {
+    std::vector<Individual*> v;
+    for (int i = 0; i < 3; ++i) v.push_back(new Alice());
+    for (int i = 0; i < 2; ++i) v.push_back(new Bob());
+    for (int i = 0; i < 4; ++i) v.push_back(new Casper());
+    return v;
+}
+
+void letThemSpeak(const std::vector<Individual*>& v) {
+    for (auto p : v) p->speak();
+}
+
+void deleteIndividuals(std::vector<Individual*>& v) {
+    for (auto p : v) delete p;
+    v.clear();
+}
+
+int identification(Individual* p) {
+    return p->identify();
+}
+
+int identification_dynamic(Individual* p) {
+    if (dynamic_cast<Casper*>(p)) return 2;
+    if (dynamic_cast<Bob*>(p)) return 1;
+    if (dynamic_cast<Alice*>(p)) return 0;
+    return -1;
+}
+
+int identification_typeid(Individual* p) {
+    if (typeid(*p) == typeid(Casper)) return 2;
+    if (typeid(*p) == typeid(Bob)) return 1;
+    if (typeid(*p) == typeid(Alice)) return 0;
+    return -1;
+}
+
+std::vector<std::unique_ptr<Individual>> createIndividualsSmart() {
+    std::vector<std::unique_ptr<Individual>> v;
+    for (int i = 0; i < 3; ++i) v.push_back(std::make_unique<Alice>());
+    for (int i = 0; i < 2; ++i) v.push_back(std::make_unique<Bob>());
+    for (int i = 0; i < 4; ++i) v.push_back(std::make_unique<Casper>());
+    return v;
+}
+
+void letThemSpeakSmart(const std::vector<std::unique_ptr<Individual>>& v) {
+    for (const auto& p : v) p->speak();
+}
+
+int main() {
+    std::cout << "--- Raw pointers ---\n";
+    auto individuals = createIndividuals();
+    letThemSpeak(individuals);
+    for (auto p : individuals) {
+        std::cout << "identify: " << identification(p)
+                  << ", dynamic: " << identification_dynamic(p)
+                  << ", typeid: " << identification_typeid(p) << "\n";
+    }
+    deleteIndividuals(individuals);
+
+    std::cout << "--- Smart pointers ---\n";
+    auto smart = createIndividualsSmart();
+    letThemSpeakSmart(smart);
+
+    return 0;
+}
